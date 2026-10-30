@@ -1,0 +1,143 @@
+# Job-Radar Konfiguration
+# Alles, was du anpassen willst, steht hier. Das Skript selbst musst du nicht anfassen.
+
+# Mindestgehalt all-in in EUR. Greift nur, wenn eine Anzeige ein Gehalt nennt.
+# Anzeigen ohne Gehaltsangabe werden NICHT aussortiert, sondern als "nicht angegeben" markiert.
+min_salary_eur: 120000
+
+# Mindestpunktzahl, ab der eine Stelle im Report landet (siehe scoring unten)
+min_score: 4
+
+# Maximal so viele Treffer pro Tagesreport
+max_results: 40
+
+# Einträge in data/seen.json, die älter sind, werden vergessen (Tage)
+forget_after_days: 120
+
+# Quelle 1: Jobbörse der Bundesagentur für Arbeit (offizielle REST-Schnittstelle)
+# Deckt sehr viele deutsche Stellen ab, auch von Konzernen und Mittelständlern.
+arbeitsagentur:
+  enabled: true
+  base_url: "https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs"
+  api_key: "jobboerse-jobsuche"
+  wo: "München"
+  umkreis: 50            # km
+  veroeffentlichtseit: 7 # nur Anzeigen der letzten X Tage
+  max_pages: 2           # je 50 Treffer pro Seite und Suchbegriff
+  queries:
+    - "Commercial Excellence"
+    - "Sales Excellence"
+    - "Sales Operations"
+    - "Revenue Operations"
+    - "Vertriebssteuerung"
+    - "Sales Strategy"
+    - "Commercial Operations"
+    - "Go-to-Market"
+    - "Sales Effectiveness"
+    - "KI Vertrieb"
+
+# Quelle 2: Karriereseiten von Unternehmen, die öffentliche Bewerbermanagement-Schnittstellen nutzen.
+# Den "token" findest du in der URL der Karriereseite, z. B. job-boards.greenhouse.io/<token>.
+# Nicht erreichbare Boards werden im Log gemeldet und übersprungen, der Lauf bricht nicht ab.
+ats_boards:
+  greenhouse:
+    - { token: "apaleo", company: "apaleo" }
+  lever: []
+    # - { token: "firmenname", company: "Firmenname" }
+  personio: []
+    # - { token: "firmenname", company: "Firmenname" }   # -> firmenname.jobs.personio.de
+
+# Ortsfilter für Quelle 2 (Quelle 1 filtert bereits über wo/umkreis)
+locations:
+  - "münchen"
+  - "munich"
+  - "garching"
+  - "unterföhring"
+  - "neubiberg"
+  - "pullach"
+  - "remote"
+
+scoring:
+  # Mindestens einer dieser Begriffe muss im Titel stehen, sonst fliegt die Stelle raus
+  title_must_match:
+    - "commercial excellence"
+    - "sales excellence"
+    - "business excellence"
+    - "sales operations"
+    - "sales ops"
+    - "revenue operations"
+    - "revops"
+    - "commercial operations"
+    - "vertriebssteuerung"
+    - "vertriebsexcellence"
+    - "sales strategy"
+    - "go-to-market"
+    - "gtm"
+    - "sales effectiveness"
+    - "sales force effectiveness"
+    - "commercial analytics"
+    - "sales analytics"
+    - "sales enablement"
+  # +2 Punkte, wenn im Titel (Führungs- bzw. Senioritätssignal)
+  seniority_terms:
+    - "head of"
+    - "head"
+    - "lead"
+    - "leiter"
+    - "leitung"
+    - "director"
+    - "senior manager"
+    - "principal"
+    - "teamleiter"
+  # +1 Punkt je Begriff, wenn im Titel oder Anzeigentext
+  bonus_terms:
+    - "ki"
+    - " ai "
+    - "künstliche intelligenz"
+    - "artificial intelligence"
+    - "power bi"
+    - "dashboard"
+    - "forecast"
+    - "pricing"
+    - "crm"
+    - "salesforce"
+    - "team"
+    - "führung"
+  # +2 Punkte für Wunscharbeitgeber
+  watchlist_companies:
+    - "knorr-bremse"
+    - "rohde"
+    - "bosch"
+    - "rodenstock"
+    - "towa"
+    - "siemens"
+    - "infineon"
+    - "man truck"
+    - "wacker"
+    - "linde"
+    - "integritynext"
+    - "osapiens"
+    - "apaleo"
+    - "navvis"
+  # Arbeitgeber, die nie im Report auftauchen sollen
+  exclude_companies:
+    - "telefónica"
+    - "telefonica"
+    - "o2 "
+  # Stellen mit diesen Begriffen im Titel werden komplett ausgeschlossen
+  exclude_title_terms:
+    - "werkstudent"
+    - "working student"
+    - "praktik"
+    - "intern"
+    - "thesis"
+    - "abschlussarbeit"
+    - "ausbildung"
+    - "duales studium"
+    - "trainee"
+    - "junior"
+    - "außendienst"
+    - "aussendienst"
+    - "sachbearbeiter"
+    - "assistenz"
+    - "assistant"

@@ -1,0 +1,48 @@
+name: Job-Radar
+
+on:
+  schedule:
+    # GitHub rechnet in UTC: 04:17 UTC = 05:17 Uhr im Winter, 06:17 Uhr im Sommer (München)
+    - cron: "17 4 * * *"
+  workflow_dispatch: {}   # manueller Start über den Button "Run workflow"
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Stellen suchen
+        id: crawl
+        run: python crawler.py
+
+      - name: Issue mit neuen Treffern anlegen
+        if: steps.crawl.outputs.new_count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create job-radar --color A3E239 --force
+          gh issue create \
+            --title "Job-Radar $(date +%F): ${{ steps.crawl.outputs.new_count }} neue Treffer" \
+            --body-file report_latest.md \
+            --label job-radar
+
+      - name: Stand speichern
+        run: |
+          git config user.name "job-radar-bot"
+          git config user.email "job-radar-bot@users.noreply.github.com"
+          git add data/seen.json
+          [ -d reports ] && git add reports/
+          git commit -m "Job-Radar $(date +%F)" || echo "Nichts zu speichern"
+          git push
